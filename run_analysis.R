@@ -1,0 +1,26 @@
+X_train<-read.table("train/X_train.txt")
+y_train<-read.table("train/y_train.txt")
+subject_train<-read.table("train/subject_train.txt")
+X_test<-read.table("test/X_test.txt")
+y_test<-read.table("test/y_test.txt")
+subject_test<-read.table("test/subject_test.txt")
+X<-rbind(X_train,X_test)
+y<-rbind(y_train,y_test)
+subject<-rbind(subject_train,subject_test)
+features<-read.table("features.txt")
+colnames(X)<-features[,2]
+colnames(y)<-"idlabel"
+colnames(subject)<-"subject"
+Xselect<-X[grep("mean|std",names(X))]
+dataselect<-cbind(Xselect,y)
+datasub<-cbind(dataselect,subject)
+label<-read.table("activity_labels.txt")
+colnames(label)<-c("idlabel","label")
+datamerge<-merge(datasub,label,by="idlabel")
+subsplit<-split(datamerge,datamerge$subject)
+subAvg<-sapply(subsplit,function(x) colMeans(x[,names(datamerge)[2:80]]))
+labelsplit<-split(datamerge,datamerge$label)
+labelAvg<-sapply(labelsplit,function(x) colMeans(x[,names(datamerge)[2:80]]))
+Avgtable<-cbind(subAvg,labelAvg)
+write.table(Avgtable,"avg.txt")
+write.table(datamerge,"tidydata.txt")
